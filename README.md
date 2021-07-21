@@ -27,6 +27,12 @@ prmon currently runs on Linux machines as it requires access to the
 
 ## Build and Deployment
 
+### Cloning the project
+
+As prmon has dependencies on submodules, clone the project as
+    
+    git clone --recurse-submodules https://github.com/HSF/prmon.git
+    
 ### Building the project
 
 Building prmon requires a C++ compiler that fully supports C++11,
@@ -83,7 +89,7 @@ The `prmon` binary is invoked with the following arguments:
 ```sh
 prmon [--pid PPP] [--filename prmon.txt] [--json-summary prmon.json] \
       [--interval 30] [--suppress-hw-info] [--units] [--netdev DEV] \
-      [--disable MON1] \
+      [--disable MON1] [--level LEV] [--level MON:LEV]\
       [-- prog arg arg ...]
 ```
 
@@ -97,6 +103,10 @@ prmon [--pid PPP] [--filename prmon.txt] [--json-summary prmon.json] \
 * `--disable` is used to disable specific monitors (and can be specified multiple times); 
     the default is that `prmon` monitors everything that it can
   * Note that the `wallmon` monitor is the only monitor that cannot be disabled
+* `--level` is used to set the logging level for monitors
+  * `--level LEV` sets the level for all monitors to LEV
+  * `--level MON:LEV` sets the level for monitor MON to LEV
+  * The valid levels are `trace`, `debug`, `info`, `warn`, `error`, `critical`
 * `--` after this argument the following arguments are treated as a program to invoke
   and remaining arguments are passed to it; `prmon` will then monitor this process
   instead of being given a PID via `--pid`

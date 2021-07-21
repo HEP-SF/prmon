@@ -235,7 +235,6 @@ int main(int argc, char* argv[]) {
   logger->set_level(spdlog::level::warn);
   logger->flush_on(spdlog::level::warn);
   spdlog::set_default_logger(logger);
-  spdlog::info("global logger initialised!");
 
   pid_t pid = -1;
   bool got_pid = false;
@@ -258,10 +257,11 @@ int main(int argc, char* argv[]) {
       {"units", no_argument, NULL, 'u'},
       {"netdev", required_argument, NULL, 'n'},
       {"help", no_argument, NULL, 'h'},
+      {"level", required_argument, NULL, 'l'},
       {0, 0, 0, 0}};
 
   int c;
-  while ((c = getopt_long(argc, argv, "-p:f:j:i:d:sun:h", long_options,
+  while ((c = getopt_long(argc, argv, "-p:f:j:i:d:sun:h:l:", long_options,
                           NULL)) != -1) {
     switch (char(c)) {
       case 'p':
@@ -293,6 +293,9 @@ int main(int argc, char* argv[]) {
         break;
       case 'h':
         do_help = 1;
+        break;
+      case 'l':
+        processLevel(std::string(optarg));
         break;
       default:
         spdlog::error("Use '--help' for usage ");
@@ -331,6 +334,13 @@ int main(int argc, char* argv[]) {
         << "                          all monitors enabled by default\n"
         << "                          Special name '[~]all' sets default "
            "state\n"
+        << "[--level, -l lev]         Set the logging level of all "
+           "monitors\n"
+        << "[--level, -l mon:lev]     Set the logging level of a "
+           "specific monitor\n"
+        << "                          Valid level names are trace, debug, "
+           "info,\n"
+        << "                          warn, error and critical\n"
         << "[--] prog [arg] ...       Instead of monitoring a PID prmon will\n"
         << "                          execute the given program + args and\n"
         << "                          monitor this (must come after other \n"
@@ -358,6 +368,16 @@ int main(int argc, char* argv[]) {
       break;
     }
   }
+
+  if (invalid_level_option) {
+    return EXIT_FAILURE;
+  }
+
+  // Now that we know given level option is valid, update the level of the
+  // global logger
+  logger->set_level(global_logging_level);
+  logger->flush_on(global_logging_level);
+  spdlog::set_default_logger(logger);
 
   if ((!got_pid && child_args == -1) || (got_pid && child_args > 0)) {
     std::stringstream strm;
